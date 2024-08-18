@@ -29,33 +29,20 @@ async function run() {
 
         // Products
         app.get('/products', async (req, res) => {
-            const { page = 1, limit = 10, search = '', brand = '', category = '', priceRange = '' } = req.query;
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
             const skip = (page - 1) * limit;
-            const query = {};
         
-            if (search) {
-                query.productName = { $regex: search, $options: 'i' };
-            }
-            if (brand) {
-                query.brandName = brand;
-            }
-            if (category) {
-                query.category = category;
-            }
-            if (priceRange) {
-                const [minPrice, maxPrice] = priceRange.split('-').map(Number);
-                query.price = { $gte: minPrice, $lte: maxPrice ? maxPrice : Infinity };
-            }
-        
-            const totalProducts = await productsCollection.countDocuments(query);
-            const products = await productsCollection.find(query).skip(skip).limit(limit).toArray();
+            const productsCollection = client.db("shopease").collection("products");
+            const totalProducts = await productsCollection.countDocuments();
+            const products = await productsCollection.find().skip(skip).limit(limit).toArray();
         
             res.send({
                 products,
                 totalPages: Math.ceil(totalProducts / limit),
-                currentPage: parseInt(page)
+                currentPage: page
             });
-        });
+        });        
         
 
         // Send a ping to confirm a successful connection
