@@ -33,7 +33,7 @@ async function run() {
             const limit = parseInt(req.query.limit) || 10;
             const skip = (page - 1) * limit;
         
-            const { searchQuery, selectedBrand, selectedCategory, selectedPriceRange } = req.query;
+            const { searchQuery, selectedBrand, selectedCategory, selectedPriceRange, sortOption } = req.query;
         
             const filters = {};
             if (searchQuery) {
