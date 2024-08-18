@@ -33,16 +33,36 @@ async function run() {
             const limit = parseInt(req.query.limit) || 10;
             const skip = (page - 1) * limit;
         
+            const { searchQuery, selectedBrand, selectedCategory, selectedPriceRange } = req.query;
+        
+            const filters = {};
+            if (searchQuery) {
+                filters.productName = { $regex: searchQuery, $options: 'i' }; // case-insensitive search
+            }
+            if (selectedBrand) {
+                filters.brandName = selectedBrand;
+            }
+            if (selectedCategory) {
+                filters.category = selectedCategory;
+            }
+            if (selectedPriceRange) {
+                const [minPrice, maxPrice] = selectedPriceRange.split('-');
+                filters.price = {
+                    $gte: parseInt(minPrice),
+                    $lte: maxPrice ? parseInt(maxPrice) : Infinity
+                };
+            }
+        
             const productsCollection = client.db("shopease").collection("products");
-            const totalProducts = await productsCollection.countDocuments();
-            const products = await productsCollection.find().skip(skip).limit(limit).toArray();
+            const totalProducts = await productsCollection.countDocuments(filters);
+            const products = await productsCollection.find(filters).skip(skip).limit(limit).toArray();
         
             res.send({
                 products,
                 totalPages: Math.ceil(totalProducts / limit),
                 currentPage: page
             });
-        });        
+        });                
         
 
         // Send a ping to confirm a successful connection
