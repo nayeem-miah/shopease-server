@@ -32,12 +32,12 @@ async function run() {
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 10;
             const skip = (page - 1) * limit;
-        
+
             const { searchQuery, selectedBrand, selectedCategory, selectedPriceRange, sortOption } = req.query;
-        
+
             const filters = {};
             if (searchQuery) {
-                filters.productName = { $regex: searchQuery, $options: 'i' }; // case-insensitive search
+                filters.productName = { $regex: searchQuery, $options: 'i' };
             }
             if (selectedBrand) {
                 filters.brandName = selectedBrand;
@@ -52,18 +52,28 @@ async function run() {
                     $lte: maxPrice ? parseInt(maxPrice) : Infinity
                 };
             }
-        
-            // const productsCollection = client.db("shopease").collection("products");
+
+            const sort = {};
+            if (sortOption === 'price-asc') {
+                sort.price = 1;
+            }
+            else if (sortOption === 'price-desc') {
+                sort.price = -1;
+            }
+            else if (sortOption === 'date-desc') {
+                sort.createdAt = -1;
+            }
+
             const totalProducts = await productsCollection.countDocuments(filters);
             const products = await productsCollection.find(filters).sort(sort).skip(skip).limit(limit).toArray();
-        
+
             res.send({
                 products,
                 totalPages: Math.ceil(totalProducts / limit),
                 currentPage: page
             });
-        });                
-        
+        });
+
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
@@ -73,7 +83,7 @@ async function run() {
         // await client.close();
     }
 }
-run().catch(console.dir); 
+run().catch(console.dir);
 
 app.get('/', (req, res) => {
     res.send('ShopEase Server is running');
