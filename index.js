@@ -68,7 +68,9 @@ async function run() {
 }
 run().catch(console.dir); 
 
-app.get('/', (req, res))
+app.get('/', (req, res) => {
+    res.send('ShopEase Server is running');
+})
 
 app.listen(port, () => {
     console.log(`ShopEase server is running on port ${port}`);
