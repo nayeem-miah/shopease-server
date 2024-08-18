@@ -53,9 +53,9 @@ async function run() {
                 };
             }
         
-            const productsCollection = client.db("shopease").collection("products");
+            // const productsCollection = client.db("shopease").collection("products");
             const totalProducts = await productsCollection.countDocuments(filters);
-            const products = await productsCollection.find(filters).skip(skip).limit(limit).toArray();
+            const products = await productsCollection.find(filters).sort(sort).skip(skip).limit(limit).toArray();
         
             res.send({
                 products,
